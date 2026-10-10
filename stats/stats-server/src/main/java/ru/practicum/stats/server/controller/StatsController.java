@@ -2,6 +2,7 @@ package ru.practicum.stats.server.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import ru.practicum.stats.server.service.StatsService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class StatsController {
@@ -27,6 +29,7 @@ public class StatsController {
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
     public void hit(@Valid @RequestBody EndpointHitDto hit) {
+        log.info("Получен POST-запрос /hit: app={}, uri={}, ip={}", hit.getApp(), hit.getUri(), hit.getIp());
         service.saveHit(hit);
     }
 
@@ -36,6 +39,7 @@ public class StatsController {
             @RequestParam @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
+        log.info("Получен GET-запрос /stats: start={}, end={}, uris={}, unique={}", start, end, uris, unique);
         return service.getStats(start, end, uris, unique);
     }
 }
