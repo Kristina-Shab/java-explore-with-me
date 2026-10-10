@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.server.mapper.EndpointHitMapper;
@@ -35,12 +36,22 @@ public class StatsServiceImpl implements StatsService {
             throw new IllegalArgumentException("Некорректный интервал статистики: start= " + start + ", end=" + end);
         }
 
-        List<String> normalizedUris = (uris == null || uris.isEmpty()) ? null : uris;
+        List<String> normalizedUris = normalizeUris(uris);
 
         List<ViewStats> stats = unique
                 ? repository.findUniqueStats(start, end, normalizedUris)
                 : repository.findAllStats(start, end, normalizedUris);
         log.info("Статистика сформирована: {} записей (unique={})", stats.size(), unique);
         return stats;
+    }
+
+    private List<String> normalizeUris(List<String> uris) {
+        if (uris == null || uris.isEmpty()) {
+            return null;
+        }
+        List<String> normalized = uris.stream()
+                .filter(StringUtils::hasText)
+                .toList();
+        return normalized.isEmpty() ? null : normalized;
     }
 }

@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StatsClientTest {
-    private static final String BASE_URL = "http://localhost:9090";
 
     @Mock
     private RestTemplate restTemplate;
@@ -32,7 +31,7 @@ class StatsClientTest {
 
     @BeforeEach
     void setUp() {
-        client = new StatsClient(BASE_URL, restTemplate);
+        client = new StatsClient(restTemplate);
     }
 
     @Test
@@ -50,7 +49,7 @@ class StatsClientTest {
                 ArgumentCaptor.forClass(HttpEntity.class);
 
         verify(restTemplate).postForEntity(
-                eq(BASE_URL + "/hit"),
+                eq("/hit"),
                 entityCaptor.capture(),
                 eq(Void.class)
         );
@@ -78,7 +77,7 @@ class StatsClientTest {
         verify(restTemplate).getForObject(uriCaptor.capture(), eq(ViewStats[].class));
 
         String url = uriCaptor.getValue().toString();
-        assertThat(url).startsWith(BASE_URL + "/stats?");
+        assertThat(url).startsWith("/stats?");
         assertThat(url).contains("start=2024-06-01%2000:00:00");
         assertThat(url).contains("end=2024-06-02%2000:00:00");
         assertThat(url).contains("uris=/events");
@@ -108,6 +107,25 @@ class StatsClientTest {
 
         String url = uriCaptor.getValue().toString();
         assertThat(url).contains("unique=true");
+        assertThat(url).doesNotContain("uris");
+    }
+
+    @Test
+    void testStatsClientGetStatsEmptyUrisOmitted() {
+        ViewStats[] mockedResponse = {new ViewStats("ewm-main-service", "/events", 2L)};
+        when(restTemplate.getForObject(any(URI.class), eq(ViewStats[].class)))
+                .thenReturn(mockedResponse);
+
+        LocalDateTime start = LocalDateTime.of(2024, 6, 1, 0, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 6, 2, 0, 0, 0);
+
+        client.getStats(start, end, List.of(), false);
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        verify(restTemplate).getForObject(uriCaptor.capture(), eq(ViewStats[].class));
+
+        String url = uriCaptor.getValue().toString();
+        assertThat(url).doesNotContain("uris");
     }
 
     @Test

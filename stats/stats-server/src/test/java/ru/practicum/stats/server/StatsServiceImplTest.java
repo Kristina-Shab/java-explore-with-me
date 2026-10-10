@@ -109,6 +109,21 @@ class StatsServiceImplTest {
     }
 
     @Test
+    void testStatsServiceGetStatsBlankUris() {
+        saveHit("/events", "192.168.0.1", "2024-06-01T12:00:00");
+        saveHit("/other", "192.168.0.1", "2024-06-01T13:00:00");
+
+        List<ViewStats> result = service.getStats(
+                LocalDateTime.of(2024, 6, 1, 0, 0),
+                LocalDateTime.of(2024, 6, 2, 0, 0),
+                List.of("", "  "),
+                false
+        );
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
     void testStatsServiceGetStatsFilterByUris() {
         saveHit("/events", "192.168.0.1", "2024-06-01T12:00:00");
         saveHit("/events/42", "192.168.0.1", "2024-06-01T13:00:00");

@@ -1,8 +1,7 @@
 package ru.practicum.stats.client;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,29 +16,17 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class StatsClient {
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private final RestTemplate rest;
-    private final String serverUrl;
-
-    @Autowired
-    public StatsClient(@Value("${stats-server.url}") String serverUrl) {
-        this.rest = new RestTemplate();
-        this.serverUrl = serverUrl;
-    }
-
-    public StatsClient(String serverUrl, RestTemplate rest) {
-        this.serverUrl = serverUrl;
-        this.rest = rest;
-    }
+    private final RestTemplate statsRestTemplate;
 
     public void hit(EndpointHitDto hit) {
         log.info("Отправка записи в сервис статистики: app={}, uri={}, ip={}",
                 hit.getApp(), hit.getUri(), hit.getIp());
         HttpEntity<EndpointHitDto> request = new HttpEntity<>(hit);
-        rest.postForEntity(serverUrl + "/hit", request, Void.class);
+        statsRestTemplate.postForEntity("/hit", request, Void.class);
         log.debug("Запись успешно отправлена: uri={}", hit.getUri());
     }
 
@@ -50,16 +37,20 @@ public class StatsClient {
         log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
                 start, end, uris, unique);
 
-        String url = UriComponentsBuilder.fromUriString(serverUrl + "/stats")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/stats")
                 .queryParam("start", start.format(FORMATTER))
-                .queryParam("end", end.format(FORMATTER))
-                .queryParam("uris", uris)
-                .queryParam("unique", unique)
+                .queryParam("end", end.format(FORMATTER));
+
+        if (uris != null && !uris.isEmpty()) {
+            builder.queryParam("uris", uris);
+        }
+
+        String url = builder.queryParam("unique", unique)
                 .build()
                 .encode()
                 .toUriString();
 
-        ViewStats[] response = rest.getForObject(URI.create(url), ViewStats[].class);
+        ViewStats[] response = statsRestTemplate.getForObject(URI.create(url), ViewStats[].class);
 
         if (response == null) {
             log.info("Сервис статистики вернул пустой ответ");
