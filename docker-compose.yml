@@ -28,9 +28,3 @@ services:
       timeout: 5s
       retries: 5
 
-    # ewm-service:
-        #ports:
-      #- "8080:8080"
-
-    #ewm-db:
-    #image: postgres:16.1
