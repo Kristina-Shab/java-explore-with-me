@@ -6,13 +6,16 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.2</version>
+		<version>3.5.16</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
 	<name>Explore With Me</name>
+    <modules>
+        <module>stats</module>
+    </modules>
 
-	<groupId>ru.practicum</groupId>
+    <groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -23,6 +26,20 @@
 	</properties>
 
 	<build>
+		<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<annotationProcessorPaths>
+					<path>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok</artifactId>
+					</path>
+				</annotationProcessorPaths>
+			</configuration>
+		</plugin>
+		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -63,7 +80,7 @@
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
 					<artifactId>spotbugs-maven-plugin</artifactId>
-					<version>4.8.5.0</version>
+					<version>4.10.3.0</version>
 					<configuration>
 						<effort>Max</effort>
 						<threshold>High</threshold>
@@ -79,7 +96,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.12</version>
+					<version>0.8.15</version>
 					<configuration>
 						<output>file</output>
 					</configuration>
