@@ -18,7 +18,10 @@ import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.ParticipationRequestRepository;
+import ru.practicum.stats.client.StatsClient;
+import ru.practicum.stats.dto.ViewStats;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     private final ParticipationRequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     @Override
     @Transactional
@@ -124,7 +128,28 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private Map<Long, Long> getViewsForEvents(Set<Long> eventIds) {
-        return Map.of(); // TODO добавить State
+        if (eventIds.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            List<String> uris = eventIds.stream()
+                    .map(id -> "/events/" + id)
+                    .toList();
+
+            List<ViewStats> stats = statsClient.getStats(
+                    LocalDateTime.MIN,
+                    LocalDateTime.now().plusYears(1),
+                    uris,
+                    false);
+            return stats.stream()
+                    .collect(Collectors.toMap(
+                            s -> Long.parseLong(s.getUri().substring("/events/".length())),
+                            ViewStats::getHits
+                    ));
+        } catch (Exception e) {
+            log.warn("Не удалось получить статистику: {}", e.getMessage());
+            return Map.of();
+        }
     }
 
     private CompilationDto buildDto(Compilation compilation) {
