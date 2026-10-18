@@ -10,6 +10,8 @@ import ru.practicum.ewm.request.model.RequestStatus;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.ewm.util.Constants.DATE_TIME_PATTERN;
+
 @Getter
 @Setter
 @Builder
@@ -21,6 +23,6 @@ public class ParticipationRequestDto {
     private Long requester;
     private RequestStatus status;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_PATTERN)
     private LocalDateTime created;
 }

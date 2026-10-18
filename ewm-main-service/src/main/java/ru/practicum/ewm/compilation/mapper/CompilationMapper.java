@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CompilationMapper {
+public final class CompilationMapper {
     public static CompilationDto toDto(Compilation compilation,
                                        Map<Long, Long> views,
                                        Map<Long, Long> confirmedRequests) {

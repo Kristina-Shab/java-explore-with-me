@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "ru.practicum.stats.client"
 })
 public class EwmMainServiceApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(EwmMainServiceApplication.class, args);
     }

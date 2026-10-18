@@ -8,7 +8,7 @@ import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.model.User;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserMapper {
+public final class UserMapper {
     public static User toEntity(NewUserRequest dto) {
         return User.builder()
                 .email(dto.getEmail())

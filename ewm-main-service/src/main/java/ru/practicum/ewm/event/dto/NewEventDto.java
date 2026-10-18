@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,13 +13,13 @@ import ru.practicum.ewm.event.model.Location;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.ewm.util.Constants.DATE_TIME_PATTERN;
+
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewEventDto {
-
     @NotBlank
     @Size(min = 20, max = 2000, message = "должно быть от 20 до 2000 символов")
     private String annotation;
@@ -33,20 +32,15 @@ public class NewEventDto {
     private String description;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_PATTERN)
     private LocalDateTime eventDate;
 
     @NotNull
     private Location location;
-
-    @Builder.Default
     private Boolean paid = false;
 
     @PositiveOrZero
-    @Builder.Default
     private Integer participantLimit = 0;
-
-    @Builder.Default
     private Boolean requestModeration = true;
 
     @NotBlank

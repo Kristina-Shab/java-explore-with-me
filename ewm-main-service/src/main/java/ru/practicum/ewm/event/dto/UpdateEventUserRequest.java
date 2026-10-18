@@ -13,6 +13,8 @@ import ru.practicum.ewm.event.model.UserStateAction;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.ewm.util.Constants.DATE_TIME_PATTERN;
+
 @Getter
 @Setter
 @Builder
@@ -27,14 +29,14 @@ public class UpdateEventUserRequest {
     @Size(min = 20, max = 7000, message = "должно быть от 20 до 7000 символов")
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_PATTERN)
     private LocalDateTime eventDate;
 
     private Location location;
 
     private Boolean paid;
 
-    @PositiveOrZero(message = "должно быть положительным или нулём")
+    @PositiveOrZero
     private Integer participantLimit;
 
     private Boolean requestModeration;

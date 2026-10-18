@@ -11,6 +11,8 @@ import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.ewm.util.Constants.DATE_TIME_PATTERN;
+
 @Getter
 @Setter
 @Builder
@@ -21,7 +23,7 @@ public class EventShortDto {
     private String annotation;
     private CategoryDto category;
     private Long confirmedRequests;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_PATTERN)
     private LocalDateTime eventDate;
     private UserShortDto initiator;
     private Boolean paid;

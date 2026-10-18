@@ -1,6 +1,8 @@
 package ru.practicum.ewm.compilation.controller;
 
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +13,7 @@ import ru.practicum.ewm.compilation.service.CompilationService;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
@@ -19,8 +22,8 @@ public class CompilationPublicController {
 
     @GetMapping
     public List<CompilationDto> getAll(@RequestParam(required = false) Boolean pinned,
-                                       @RequestParam(defaultValue = "0") int from,
-                                       @RequestParam(defaultValue = "10") int size) {
+                                       @RequestParam(defaultValue = "0") @Min(0) int from,
+                                       @RequestParam(defaultValue = "10") @Min(1) int size) {
         return compilationService.getAll(pinned, from, size);
     }
 

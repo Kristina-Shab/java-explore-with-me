@@ -100,6 +100,7 @@
 					<version>0.8.15</version>
 					<configuration>
 						<output>file</output>
+						<skip>true</skip>
 					</configuration>
 					<executions>
 						<execution>

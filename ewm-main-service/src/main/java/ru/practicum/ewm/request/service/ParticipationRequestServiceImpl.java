@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
-import ru.practicum.ewm.event.repository.EventRepository;
+import ru.practicum.ewm.event.validation.EventValidatorRequest;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.ValidationException;
@@ -18,7 +18,6 @@ import ru.practicum.ewm.request.model.ParticipationRequest;
 import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.ParticipationRequestRepository;
 import ru.practicum.ewm.user.model.User;
-import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,37 +29,30 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ParticipationRequestServiceImpl implements ParticipationRequestService {
     private final ParticipationRequestRepository requestRepository;
-    private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final EventValidatorRequest validator;
 
     @Override
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        User requester = findUserById(userId);
-        Event event = findEventById(eventId);
-
+        User requester = validator.findUserById(userId);
+        Event event = validator.findEventById(eventId);
         checkCreateRequest(event, userId, eventId);
-
         RequestStatus initialStatus = determineInitialStatus(event);
-
         ParticipationRequest request = ParticipationRequest.builder()
                 .event(event)
                 .requester(requester)
                 .status(initialStatus)
                 .created(LocalDateTime.now())
                 .build();
-
         ParticipationRequest saved = requestRepository.save(request);
         log.info("Создана заявка: id={}, eventId={}, userId={}, status={}",
                 saved.getId(), eventId, userId, initialStatus);
-
         return ParticipationRequestMapper.toDto(saved);
     }
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
-        findUserById(userId);
-
+        validator.findUserById(userId);
         return requestRepository.findAllByRequesterId(userId).stream()
                 .map(ParticipationRequestMapper::toDto)
                 .toList();
@@ -80,9 +72,9 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
-        findUserById(userId);
-        Event event = findEventById(eventId);
-        checkEventInitiator(event, userId);
+        validator.findUserById(userId);
+        Event event = validator.findEventById(eventId);
+        validator.checkEventInitiator(event, userId);
         return requestRepository.findAllByEventId(eventId).stream()
                 .map(ParticipationRequestMapper::toDto)
                 .toList();
@@ -93,27 +85,19 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId,
                                                               Long eventId,
                                                               EventRequestStatusUpdateRequest dto) {
-        findUserById(userId);
-        Event event = findEventById(eventId);
-        checkEventInitiator(event, userId);
+        validator.findUserById(userId);
+        Event event = validator.findEventById(eventId);
+        validator.checkEventInitiator(event, userId);
         checkUpdateStatus(dto.getStatus());
         List<ParticipationRequest> requests = findAllRequestedByEvent(eventId, dto.getRequestIds());
         checkAllPending(requests);
-        if (dto.getStatus() == RequestStatus.CONFIRMED) {
-            return confirmRequests(event, requests);
-        } else {
-            return rejectRequests(requests);
-        }
-    }
-
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
-    }
-
-    private Event findEventById(Long eventId) {
-        return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
+        EventRequestStatusUpdateResult result = dto.getStatus() == RequestStatus.CONFIRMED
+                ? confirmRequests(event, requests)
+                : rejectRequests(requests);
+        log.info("Обновлены статусы заявок: eventId={}, requested={}, confirmed={}, rejected={}",
+                eventId, requests.size(),
+                result.getConfirmedRequests().size(), result.getRejectedRequests().size());
+        return result;
     }
 
     private void checkCreateRequest(Event event, Long userId, Long eventId) {
@@ -143,12 +127,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             return RequestStatus.CONFIRMED;
         }
         return RequestStatus.PENDING;
-    }
-
-    private void checkEventInitiator(Event event, Long userId) {
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new NotFoundException("Событие с id=" + event.getId() + " не найдено");
-        }
     }
 
     private void checkUpdateStatus(RequestStatus status) {
@@ -225,11 +203,9 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     private List<ParticipationRequest> findAllRequestedByEvent(Long eventId, List<Long> requestIds) {
         List<ParticipationRequest> requests = requestRepository.findAllByIdInAndEventId(requestIds, eventId);
-
         if (requests.size() != requestIds.size()) {
             throw new NotFoundException("Некоторые заявки не найдены или не принадлежат событию");
         }
-
         return requests;
     }
 }

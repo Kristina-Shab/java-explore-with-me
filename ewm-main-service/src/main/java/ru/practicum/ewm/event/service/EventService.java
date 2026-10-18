@@ -5,21 +5,13 @@ import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.event.model.EventState;
+import ru.practicum.ewm.event.filter.EventAdminFilter;
+import ru.practicum.ewm.event.filter.EventPublicFilter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
-    List<EventShortDto> getPublishedEvents(String text,
-                                           List<Long> categories,
-                                           Boolean paid,
-                                           LocalDateTime rangeStart,
-                                           LocalDateTime rangeEnd,
-                                           Boolean onlyAvailable,
-                                           String sort,
-                                           int from,
-                                           int size);
+    List<EventShortDto> getPublishedEvents(EventPublicFilter filter);
 
     EventFullDto getPublishedEventById(Long eventId);
 
@@ -31,13 +23,7 @@ public interface EventService {
 
     EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest dto);
 
-    List<EventFullDto> searchEventsAdmin(List<Long> users,
-                                         List<EventState> states,
-                                         List<Long> categories,
-                                         LocalDateTime rangeStart,
-                                         LocalDateTime rangeEnd,
-                                         int from,
-                                         int size);
+    List<EventFullDto> searchEventsAdmin(EventAdminFilter filter);
 
     EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest dto);
 }

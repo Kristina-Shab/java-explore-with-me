@@ -7,8 +7,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.request.repository.ParticipationRequestRepository;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
@@ -23,6 +25,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final ParticipationRequestRepository requestRepository;
 
     @Override
     @Transactional
@@ -54,6 +58,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void delete(Long userId) {
         User user = findUserById(userId);
+        if (eventRepository.existsByInitiatorId(userId)) {
+            throw new ConflictException("Пользователь с id=" + userId + " является организатором событий");
+        }
+        if (requestRepository.existsByRequesterId(userId)) {
+            throw new ConflictException("У пользователя с id=" + userId + " есть заявки на участие");
+        }
         userRepository.delete(user);
         log.info("Удалён пользователь: id={}", userId);
     }

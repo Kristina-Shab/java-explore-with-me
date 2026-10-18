@@ -3,7 +3,6 @@ package ru.practicum.ewm.compilation.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,14 +12,10 @@ import java.util.Set;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCompilationDto {
-    @Builder.Default
     private Set<Long> events = new HashSet<>();
-
-    @Builder.Default
     private Boolean pinned = false;
 
     @NotBlank

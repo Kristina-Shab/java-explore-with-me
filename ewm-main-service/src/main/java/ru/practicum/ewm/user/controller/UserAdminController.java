@@ -1,8 +1,10 @@
 package ru.practicum.ewm.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import ru.practicum.ewm.user.service.UserService;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
@@ -26,8 +29,8 @@ public class UserAdminController {
 
     @GetMapping
     public List<UserDto> getAll(@RequestParam(required = false) List<Long> ids,
-                                @RequestParam(defaultValue = "0") int from,
-                                @RequestParam(defaultValue = "10") int size) {
+                                @RequestParam(defaultValue = "0") @Min(0) int from,
+                                @RequestParam(defaultValue = "10") @Min(1) int size) {
         return userService.getAll(ids, from, size);
     }
 

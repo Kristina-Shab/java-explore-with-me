@@ -10,7 +10,7 @@ import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.user.mapper.UserMapper;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EventMapper {
+public final class EventMapper {
     public static Event toEntity(NewEventDto dto) {
         return Event.builder()
                 .annotation(dto.getAnnotation())

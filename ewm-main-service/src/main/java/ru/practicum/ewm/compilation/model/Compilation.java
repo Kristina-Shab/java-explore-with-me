@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "compilations")
+@Table(name = "compilations",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_compilation_name",
+                columnNames = "title"
+        ))
 @Getter
 @Setter
 @Builder

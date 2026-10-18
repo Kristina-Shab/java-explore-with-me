@@ -6,7 +6,7 @@ import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.model.ParticipationRequest;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ParticipationRequestMapper {
+public final class ParticipationRequestMapper {
     public static ParticipationRequestDto toDto(ParticipationRequest request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
