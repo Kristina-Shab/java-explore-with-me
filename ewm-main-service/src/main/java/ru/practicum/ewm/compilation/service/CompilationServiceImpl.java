@@ -93,7 +93,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .distinct()
                 .toList();
 
-        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds);
+        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
 
         return compilations.stream()
@@ -129,7 +129,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .distinct()
                 .toList();
 
-        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds);
+        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
 
         return CompilationMapper.toDto(compilation, views, confirmedRequests);

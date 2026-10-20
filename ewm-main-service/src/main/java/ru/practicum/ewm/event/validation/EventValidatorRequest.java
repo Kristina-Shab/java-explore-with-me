@@ -61,16 +61,16 @@ public class EventValidatorRequest {
         }
     }
 
-    public void checkEventDate(LocalDateTime eventDate) {
-        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException(
-                    "Дата события должна быть не раньше, чем через два часа от текущего момента");
+    public void checkEventDate(LocalDateTime eventDate, int hours) {
+        if (eventDate.isBefore(LocalDateTime.now().plusHours(hours))) {
+            throw new ValidationException(
+                    "Дата события должна быть не раньше, чем через " + hours + " часа(ов) от текущего момента");
         }
     }
 
-    public void checkEventDateIfPresent(LocalDateTime eventDate) {
+    public void checkEventDateIfPresent(LocalDateTime eventDate, int hours) {
         if (eventDate != null) {
-            checkEventDate(eventDate);
+            checkEventDate(eventDate, hours);
         }
     }
 

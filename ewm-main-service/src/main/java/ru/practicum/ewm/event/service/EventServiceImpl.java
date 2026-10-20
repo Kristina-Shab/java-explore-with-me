@@ -61,7 +61,7 @@ public class EventServiceImpl implements EventService {
         Event event = validator.findEventById(eventId);
         validator.checkEventPublished(event);
         return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId));
+                eventStatsService.getViews(eventId, true));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto createEvent(Long userId, NewEventDto dto) {
         User initiator = validator.findUserById(userId);
         Category category = validator.findCategoryById(dto.getCategory());
-        validator.checkEventDate(dto.getEventDate());
+        validator.checkEventDate(dto.getEventDate(), 2);
         Event event = EventMapper.toEntity(dto).toBuilder()
                 .initiator(initiator)
                 .category(category)
@@ -96,7 +96,7 @@ public class EventServiceImpl implements EventService {
         Event event = validator.findEventById(eventId);
         validator.checkEventInitiator(event, userId);
         return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId));
+                eventStatsService.getViews(eventId, false));
     }
 
     @Override
@@ -106,12 +106,12 @@ public class EventServiceImpl implements EventService {
         Event event = validator.findEventById(eventId);
         validator.checkEventInitiator(event, userId);
         validator.checkEventUpdatable(event);
-        validator.checkEventDateIfPresent(dto.getEventDate());
+        validator.checkEventDateIfPresent(dto.getEventDate(), 2);
         applyEventUpdate(event, dto);
         applyUserStateAction(event, dto.getStateAction());
         log.info("Обновлено событие: id={}, state={}", event.getId(), event.getState());
         return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId));
+                eventStatsService.getViews(eventId, false));
     }
 
     @Override
@@ -129,11 +129,12 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest dto) {
         Event event = validator.findEventById(eventId);
+        validator.checkEventDateIfPresent(dto.getEventDate(), 1);
         applyAdminUpdate(event, dto);
         applyAdminStateAction(event, dto.getStateAction());
         log.info("Админ обновил событие: id={}, state={}", event.getId(), event.getState());
         return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId));
+                eventStatsService.getViews(eventId, false));
     }
 
     private void applyEventUpdate(Event event, UpdateEventUserRequest dto) {
@@ -224,10 +225,7 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException(
                     "Публиковать можно только события в состоянии PENDING");
         }
-        if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-            throw new ConflictException(
-                    "Дата начала события должна быть не раньше чем через час от даты публикации");
-        }
+        validator.checkEventDate(event.getEventDate(), 1);
         event.setState(EventState.PUBLISHED);
         event.setPublishedOn(LocalDateTime.now());
     }
@@ -248,7 +246,7 @@ public class EventServiceImpl implements EventService {
                 .map(Event::getId)
                 .toList();
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
-        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds);
+        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         return events.stream()
                 .map(event -> EventMapper.toShortDto(
                         event,
@@ -265,7 +263,7 @@ public class EventServiceImpl implements EventService {
                 .map(Event::getId)
                 .toList();
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
-        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds);
+        Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         return events.stream()
                 .map(event -> EventMapper.toFullDto(
                         event,

@@ -24,13 +24,13 @@ public class EventStatsService {
     private final StatsClient statsClient;
     private final ParticipationRequestRepository requestRepository;
 
-    public Long getViews(Long eventId) {
+    public Long getViews(Long eventId, boolean unique) {
         try {
             List<ViewStats> stats = statsClient.getStats(
                     statsRangeStart(),
                     statsRangeEnd(),
                     List.of(EVENT_URI_PREFIX + eventId),
-                    false);
+                    unique);
             return stats.isEmpty() ? 0L : stats.getFirst().getHits();
         } catch (Exception e) {
             log.warn("Не удалось получить статистику по событию id={}: {}", eventId, e.getMessage());
@@ -38,7 +38,7 @@ public class EventStatsService {
         }
     }
 
-    public Map<Long, Long> getViewsForEvents(List<Long> eventIds) {
+    public Map<Long, Long> getViewsForEvents(List<Long> eventIds, boolean unique) {
         if (eventIds.isEmpty()) {
             return Map.of();
         }
@@ -51,7 +51,7 @@ public class EventStatsService {
                     statsRangeStart(),
                     statsRangeEnd(),
                     uris,
-                    false);
+                    unique);
 
             return stats.stream()
                     .collect(Collectors.toMap(
