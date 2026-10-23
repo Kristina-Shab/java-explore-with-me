@@ -9,7 +9,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStats;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,20 +36,15 @@ public class StatsClient {
         log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
                 start, end, uris, unique);
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/stats")
+        String url = UriComponentsBuilder.fromPath("/stats")
                 .queryParam("start", start.format(FORMATTER))
-                .queryParam("end", end.format(FORMATTER));
-
-        if (uris != null && !uris.isEmpty()) {
-            builder.queryParam("uris", uris);
-        }
-
-        String url = builder.queryParam("unique", unique)
+                .queryParam("end", end.format(FORMATTER))
+                .queryParam("uris", uris)
+                .queryParam("unique", unique)
                 .build()
-                .encode()
                 .toUriString();
 
-        ViewStats[] response = statsRestTemplate.getForObject(URI.create(url), ViewStats[].class);
+        ViewStats[] response = statsRestTemplate.getForObject(url, ViewStats[].class);
 
         if (response == null) {
             log.info("Сервис статистики вернул пустой ответ");

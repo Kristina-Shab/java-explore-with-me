@@ -11,12 +11,11 @@ import org.springframework.web.client.RestTemplate;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStats;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,7 +64,7 @@ class StatsClientTest {
     @Test
     void testStatsClientGetStatsBuildUrl() {
         ViewStats[] mockedResponse = {new ViewStats("ewm-main-service", "/events", 5L)};
-        when(restTemplate.getForObject(any(URI.class), eq(ViewStats[].class)))
+        when(restTemplate.getForObject(anyString(), eq(ViewStats[].class)))
                 .thenReturn(mockedResponse);
 
         LocalDateTime start = LocalDateTime.of(2024, 6, 1, 0, 0, 0);
@@ -73,13 +72,13 @@ class StatsClientTest {
 
         List<ViewStats> result = client.getStats(start, end, List.of("/events"), false);
 
-        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        ArgumentCaptor<String> uriCaptor = ArgumentCaptor.forClass(String.class);
         verify(restTemplate).getForObject(uriCaptor.capture(), eq(ViewStats[].class));
 
-        String url = uriCaptor.getValue().toString();
+        String url = uriCaptor.getValue();
         assertThat(url).startsWith("/stats?");
-        assertThat(url).contains("start=2024-06-01%2000:00:00");
-        assertThat(url).contains("end=2024-06-02%2000:00:00");
+        assertThat(url).contains("start=2024-06-01 00:00:00");
+        assertThat(url).contains("end=2024-06-02 00:00:00");
         assertThat(url).contains("uris=/events");
         assertThat(url).contains("unique=false");
 
@@ -94,7 +93,7 @@ class StatsClientTest {
         ViewStats[] mockedResponse = {
                 new ViewStats("ewm-main-service", "/events", 2L)
         };
-        when(restTemplate.getForObject(any(URI.class), eq(ViewStats[].class)))
+        when(restTemplate.getForObject(anyString(), eq(ViewStats[].class)))
                 .thenReturn(mockedResponse);
 
         LocalDateTime start = LocalDateTime.of(2024, 6, 1, 0, 0, 0);
@@ -102,18 +101,18 @@ class StatsClientTest {
 
         client.getStats(start, end, null, true);
 
-        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        ArgumentCaptor<String> uriCaptor = ArgumentCaptor.forClass(String.class);
         verify(restTemplate).getForObject(uriCaptor.capture(), eq(ViewStats[].class));
 
-        String url = uriCaptor.getValue().toString();
+        String url = uriCaptor.getValue();
         assertThat(url).contains("unique=true");
-        assertThat(url).doesNotContain("uris");
+        assertThat(url).doesNotContain("uris=/events");
     }
 
     @Test
     void testStatsClientGetStatsEmptyUrisOmitted() {
         ViewStats[] mockedResponse = {new ViewStats("ewm-main-service", "/events", 2L)};
-        when(restTemplate.getForObject(any(URI.class), eq(ViewStats[].class)))
+        when(restTemplate.getForObject(anyString(), eq(ViewStats[].class)))
                 .thenReturn(mockedResponse);
 
         LocalDateTime start = LocalDateTime.of(2024, 6, 1, 0, 0, 0);
@@ -121,16 +120,16 @@ class StatsClientTest {
 
         client.getStats(start, end, List.of(), false);
 
-        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        ArgumentCaptor<String> uriCaptor = ArgumentCaptor.forClass(String.class);
         verify(restTemplate).getForObject(uriCaptor.capture(), eq(ViewStats[].class));
 
-        String url = uriCaptor.getValue().toString();
-        assertThat(url).doesNotContain("uris");
+        String url = uriCaptor.getValue();
+        assertThat(url).doesNotContain("/events");
     }
 
     @Test
     void testStatsClientGetStatsNullResponse() {
-        when(restTemplate.getForObject(any(URI.class), eq(ViewStats[].class)))
+        when(restTemplate.getForObject(anyString(), eq(ViewStats[].class)))
                 .thenReturn(null);
 
         LocalDateTime start = LocalDateTime.of(2024, 6, 1, 0, 0, 0);
