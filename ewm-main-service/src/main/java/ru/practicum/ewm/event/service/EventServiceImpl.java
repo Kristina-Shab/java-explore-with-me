@@ -19,6 +19,7 @@ import ru.practicum.ewm.event.filter.EventPublicFilter;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.AdminStateAction;
 import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.event.model.EventSort;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.model.UserStateAction;
 import ru.practicum.ewm.event.repository.EventRepository;
@@ -44,7 +45,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getPublishedEvents(EventPublicFilter filter) {
         EventPublicFilter normalizedFilter = normalizePublicFilter(filter);
-        if (validator.isSortByViews(normalizedFilter.getSort())) {
+        EventSort sortType = EventSort.fromString(normalizedFilter.getSort());
+        if (sortType == EventSort.VIEWS) {
             return searchAndSortByViews(normalizedFilter);
         }
         Pageable pageable = PageRequest.of(

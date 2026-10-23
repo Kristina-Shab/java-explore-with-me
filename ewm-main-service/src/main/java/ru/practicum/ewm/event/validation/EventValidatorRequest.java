@@ -79,14 +79,4 @@ public class EventValidatorRequest {
             throw new ValidationException("Дата начала диапазона не может быть позже даты конца");
         }
     }
-
-    public boolean isSortByViews(String sort) {
-        if (sort == null || sort.isBlank() || "EVENT_DATE".equalsIgnoreCase(sort)) {
-            return false;
-        }
-        if ("VIEWS".equalsIgnoreCase(sort)) {
-            return true;
-        }
-        throw new ValidationException("Неизвестный вариант сортировки: " + sort);
-    }
 }
