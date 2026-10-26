@@ -15,12 +15,14 @@ import java.util.stream.Collectors;
 public final class CompilationMapper {
     public static CompilationDto toDto(Compilation compilation,
                                        Map<Long, Long> views,
-                                       Map<Long, Long> confirmedRequests) {
+                                       Map<Long, Long> confirmedRequests,
+                                       Map<Long, Long> commentCounts) {
         Set<EventShortDto> events = compilation.getEvents().stream()
                 .map(event -> EventMapper.toShortDto(
                         event,
                         confirmedRequests.getOrDefault(event.getId(), 0L),
-                        views.getOrDefault(event.getId(), 0L)))
+                        views.getOrDefault(event.getId(), 0L),
+                        commentCounts.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toSet());
 
         return CompilationDto.builder()
