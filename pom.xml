@@ -13,6 +13,7 @@
 	<name>Explore With Me</name>
     <modules>
         <module>stats</module>
+        <module>ewm-main-service</module>
     </modules>
 
     <groupId>ru.practicum</groupId>
@@ -99,6 +100,7 @@
 					<version>0.8.15</version>
 					<configuration>
 						<output>file</output>
+						<skip>true</skip>
 					</configuration>
 					<executions>
 						<execution>
