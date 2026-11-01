@@ -3,6 +3,7 @@ package ru.practicum.ewm.comment.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.practicum.ewm.comment.model.CommentReactionCount;
 import ru.practicum.ewm.comment.model.Reaction;
 
 import java.util.List;
@@ -19,5 +20,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             WHERE r.comment.id IN :commentIds
             GROUP BY r.comment.id, r.useful
             """)
-    List<Object[]> countReactionsForComments(@Param("commentIds") List<Long> commentIds);
+    List<CommentReactionCount> countReactionsForComments(@Param("commentIds") List<Long> commentIds);
 }

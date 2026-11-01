@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.ewm.comment.model.Comment;
+import ru.practicum.ewm.comment.model.CommentWithReactions;
+import ru.practicum.ewm.comment.model.EventCommentCount;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +29,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                                  Pageable pageable);
 
     @Query("""
-            SELECT c,
+            SELECT c AS comment,
                    SUM(CASE WHEN r.useful = true THEN 1 ELSE 0 END) as usefulCount,
                    SUM(CASE WHEN r.useful = false THEN 1 ELSE 0 END) as uselessCount
             FROM Comment c
@@ -41,13 +43,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                 CASE WHEN :sort = 'OLDEST' THEN c.createdOn END ASC,
                 CASE WHEN :sort != 'OLDEST' OR :sort IS NULL THEN c.createdOn END DESC
             """)
-    Page<Object[]> findEventCommentsWithReactions(
+    Page<CommentWithReactions> findEventCommentsWithReactions(
             @Param("eventId") Long eventId,
             @Param("sort") String sort,
             Pageable pageable);
 
     @Query("SELECT c.event.id, COUNT(c) FROM Comment c WHERE c.event.id IN :eventIds GROUP BY c.event.id")
-    List<Object[]> countCommentsForEvents(@Param("eventIds") List<Long> eventIds);
+    List<EventCommentCount> countCommentsForEvents(@Param("eventIds") List<Long> eventIds);
 
     long countByEventId(Long eventId);
 }

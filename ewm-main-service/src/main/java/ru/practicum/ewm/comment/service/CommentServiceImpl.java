@@ -13,7 +13,9 @@ import ru.practicum.ewm.comment.dto.CommentRequestDto;
 import ru.practicum.ewm.comment.dto.ReactionDto;
 import ru.practicum.ewm.comment.mapper.CommentMapper;
 import ru.practicum.ewm.comment.model.Comment;
+import ru.practicum.ewm.comment.model.CommentReactionCount;
 import ru.practicum.ewm.comment.model.CommentSort;
+import ru.practicum.ewm.comment.model.CommentWithReactions;
 import ru.practicum.ewm.comment.model.Reaction;
 import ru.practicum.ewm.comment.repository.CommentRepository;
 import ru.practicum.ewm.comment.repository.ReactionRepository;
@@ -94,14 +96,13 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDto> getEventComments(Long eventId, CommentSort sort, int from, int size) {
         validator.findEventById(eventId);
         Pageable pageable = PageRequest.of(from / size, size);
-        Page<Object[]> page = commentRepository.findEventCommentsWithReactions(eventId, sort.name(), pageable);
+        Page<CommentWithReactions> page = commentRepository.findEventCommentsWithReactions(
+                eventId, sort.name(), pageable);
         return page.getContent().stream()
-                .map(row -> {
-                    Comment comment = (Comment) row[0];
-                    Long useful = ((Number) row[1]).longValue();
-                    Long useless = ((Number) row[2]).longValue();
-                    return CommentMapper.toDto(comment, useful, useless);
-                })
+                .map(row -> CommentMapper.toDto(
+                        row.getComment(),
+                        row.getUsefulCount() != null ? row.getUsefulCount() : 0L,
+                        row.getUselessCount() != null ? row.getUselessCount() : 0L))
                 .toList();
     }
 
@@ -183,13 +184,13 @@ public class CommentServiceImpl implements CommentService {
         if (commentIds.isEmpty()) {
             return Map.of();
         }
-        List<Object[]> reactionCounts = reactionRepository.countReactionsForComments(commentIds);
+        List<CommentReactionCount> reactionCounts = reactionRepository.countReactionsForComments(commentIds);
         return reactionCounts.stream()
                 .collect(Collectors.groupingBy(
-                        row -> (Long) row[0],
+                        CommentReactionCount::getCommentId,
                         Collectors.toMap(
-                                row -> (Boolean) row[1],
-                                row -> (Long) row[2]
+                                CommentReactionCount::getUseful,
+                                CommentReactionCount::getCount
                         )
                 ));
     }

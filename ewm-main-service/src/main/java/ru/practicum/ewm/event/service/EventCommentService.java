@@ -3,6 +3,7 @@ package ru.practicum.ewm.event.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.comment.model.EventCommentCount;
 import ru.practicum.ewm.comment.repository.CommentRepository;
 
 import java.util.List;
@@ -25,8 +26,8 @@ public class EventCommentService {
         }
         return commentRepository.countCommentsForEvents(eventIds).stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (Long) row[1]
+                        EventCommentCount::getEventId,
+                        EventCommentCount::getCount
                 ));
     }
 }
