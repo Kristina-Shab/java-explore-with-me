@@ -41,6 +41,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventValidatorRequest validator;
     private final EventStatsService eventStatsService;
+    private final EventCommentService eventCommentService;
 
     @Override
     public List<EventShortDto> getPublishedEvents(EventPublicFilter filter) {
@@ -62,8 +63,10 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getPublishedEventById(Long eventId) {
         Event event = validator.findEventById(eventId);
         validator.checkEventPublished(event);
-        return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId, true));
+        return EventMapper.toFullDto(event,
+                eventStatsService.getConfirmedRequests(eventId),
+                eventStatsService.getViews(eventId, true),
+                eventCommentService.getCommentCount(eventId));
     }
 
     @Override
@@ -81,7 +84,7 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepository.save(event);
         log.info("Создано событие: id={}, title={}, initiatorId={}",
                 saved.getId(), saved.getTitle(), userId);
-        return EventMapper.toFullDto(saved, 0L, 0L);
+        return EventMapper.toFullDto(saved, 0L, 0L, 0L);
     }
 
     @Override
@@ -97,8 +100,10 @@ public class EventServiceImpl implements EventService {
         validator.checkUserIdExists(userId);
         Event event = validator.findEventById(eventId);
         validator.checkEventInitiator(event, userId);
-        return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId, false));
+        return EventMapper.toFullDto(event,
+                eventStatsService.getConfirmedRequests(eventId),
+                eventStatsService.getViews(eventId, false),
+                eventCommentService.getCommentCount(eventId));
     }
 
     @Override
@@ -112,8 +117,10 @@ public class EventServiceImpl implements EventService {
         applyEventUpdate(event, dto);
         applyUserStateAction(event, dto.getStateAction());
         log.info("Обновлено событие: id={}, state={}", event.getId(), event.getState());
-        return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId, false));
+        return EventMapper.toFullDto(event,
+                eventStatsService.getConfirmedRequests(eventId),
+                eventStatsService.getViews(eventId, false),
+                eventCommentService.getCommentCount(eventId));
     }
 
     @Override
@@ -135,8 +142,10 @@ public class EventServiceImpl implements EventService {
         applyAdminUpdate(event, dto);
         applyAdminStateAction(event, dto.getStateAction());
         log.info("Админ обновил событие: id={}, state={}", event.getId(), event.getState());
-        return EventMapper.toFullDto(event, eventStatsService.getConfirmedRequests(eventId),
-                eventStatsService.getViews(eventId, false));
+        return EventMapper.toFullDto(event,
+                eventStatsService.getConfirmedRequests(eventId),
+                eventStatsService.getViews(eventId, false),
+                eventCommentService.getCommentCount(eventId));
     }
 
     private void applyEventUpdate(Event event, UpdateEventUserRequest dto) {
@@ -249,11 +258,13 @@ public class EventServiceImpl implements EventService {
                 .toList();
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
         Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
+        Map<Long, Long> commentCounts = eventCommentService.getCommentCountsForEvents(eventIds);
         return events.stream()
                 .map(event -> EventMapper.toShortDto(
                         event,
                         confirmedRequests.getOrDefault(event.getId(), 0L),
-                        views.getOrDefault(event.getId(), 0L)))
+                        views.getOrDefault(event.getId(), 0L),
+                        commentCounts.getOrDefault(event.getId(), 0L)))
                 .toList();
     }
 
@@ -266,11 +277,13 @@ public class EventServiceImpl implements EventService {
                 .toList();
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
         Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
+        Map<Long, Long> commentCounts = eventCommentService.getCommentCountsForEvents(eventIds);
         return events.stream()
                 .map(event -> EventMapper.toFullDto(
                         event,
                         confirmedRequests.getOrDefault(event.getId(), 0L),
-                        views.getOrDefault(event.getId(), 0L)))
+                        views.getOrDefault(event.getId(), 0L),
+                        commentCounts.getOrDefault(event.getId(), 0L)))
                 .toList();
     }
 

@@ -15,6 +15,7 @@ import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
+import ru.practicum.ewm.event.service.EventCommentService;
 import ru.practicum.ewm.event.service.EventStatsService;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.ValidationException;
@@ -33,6 +34,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     private final EventStatsService eventStatsService;
+    private final EventCommentService eventCommentService;
 
     @Override
     @Transactional
@@ -95,9 +97,10 @@ public class CompilationServiceImpl implements CompilationService {
 
         Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
+        Map<Long, Long> commentCounts = eventCommentService.getCommentCountsForEvents(eventIds);
 
         return compilations.stream()
-                .map(c -> CompilationMapper.toDto(c, views, confirmedRequests))
+                .map(c -> CompilationMapper.toDto(c, views, confirmedRequests, commentCounts))
                 .toList();
     }
 
@@ -131,8 +134,9 @@ public class CompilationServiceImpl implements CompilationService {
 
         Map<Long, Long> views = eventStatsService.getViewsForEvents(eventIds, false);
         Map<Long, Long> confirmedRequests = eventStatsService.getConfirmedRequestsForEvents(eventIds);
+        Map<Long, Long> commentCounts = eventCommentService.getCommentCountsForEvents(eventIds);
 
-        return CompilationMapper.toDto(compilation, views, confirmedRequests);
+        return CompilationMapper.toDto(compilation, views, confirmedRequests, commentCounts);
     }
 
     private <T> void setIfNotNull(T value, Consumer<T> setter) {
